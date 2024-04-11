@@ -2,16 +2,16 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 
-static inline void native_cpuid(unsigned int *eax, unsigned int *ebx,
+static inline void custom_cpuid(unsigned int *eax, unsigned int *ebx,
                                 unsigned int *ecx, unsigned int *edx)
 {
     /* ecx is often an input as well as an output. */
     asm volatile("cpuid"
-                 : "=a" (*eax),
-                   "=b" (*ebx),
-                   "=c" (*ecx),
-                   "=d" (*edx)
-                 : "0" (*eax), "2" (*ecx)
+                 : "=a"(*eax),
+                   "=b"(*ebx),
+                   "=c"(*ecx),
+                   "=d"(*edx)
+                 : "0"(*eax), "2"(*ecx)
                  : "memory");
 }
 
@@ -23,7 +23,7 @@ static int __init cpuinfo_init(void)
 
     // Processor Vendor ID
     eax = 0;
-    native_cpuid(&eax, &ebx, &ecx, &edx);
+    custom_cpuid(&eax, &ebx, &ecx, &edx);
     printk(KERN_INFO "Vendor ID: %c%c%c%c%c%c%c%c%c%c%c%c\n",
            (ebx) & 0xFF, (ebx >> 8) & 0xFF, (ebx >> 16) & 0xFF, (ebx >> 24) & 0xFF,
            (edx) & 0xFF, (edx >> 8) & 0xFF, (edx >> 16) & 0xFF, (edx >> 24) & 0xFF,
@@ -31,7 +31,7 @@ static int __init cpuinfo_init(void)
 
     // Processor Features
     eax = 1;
-    native_cpuid(&eax, &ebx, &ecx, &edx);
+    custom_cpuid(&eax, &ebx, &ecx, &edx);
     printk(KERN_INFO "Stepping: %d\n", eax & 0xF);
     printk(KERN_INFO "Model: %d\n", (eax >> 4) & 0xF);
     printk(KERN_INFO "Family: %d\n", (eax >> 8) & 0xF);
@@ -41,7 +41,7 @@ static int __init cpuinfo_init(void)
 
     // Processor Serial Number (if available)
     eax = 3;
-    native_cpuid(&eax, &ebx, &ecx, &edx);
+    custom_cpuid(&eax, &ebx, &ecx, &edx);
     printk(KERN_INFO "Serial Number: 0x%08x%08x\n", edx, ecx);
 
     return 0;
